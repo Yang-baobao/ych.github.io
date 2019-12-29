@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>信号与系统大作业</title>
+        <meta name="description" content="Face it." />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!--Bootstrap 4-->
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+        <!--icons-->
+        <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" />
+    </head>
+    <body>
+        <!--hero section-->
+        <section class="hero p-0">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-sm-3 bg-primary-dark py-5 col-fixed text-center">
+                        <div class="mb-5 text-center">
+                            <h1 class="main-heading">男女声识别</h1>
+                        </div>
+                        <ul class="nav flex-column menu-left mt-5">
+                            <li class="nav-item">
+                                <a class="nav-link page-scroll" href="#welcome">基本原理模型</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link page-scroll" href="#work">实现过程</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link page-scroll" href="#about">结果分析</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link page-scroll" href="#connect">组员</a>
+                            </li>
+                        </ul>
+                        <p class="mt-4 social-icon">
+                        </p>
+                    </div>
+                    <div class="col-sm-9 ml-auto px-0">
+                        <!--welcome-->
+                        <section class="hero bg-primary" id="welcome">
+                            <div class="container">
+                                <div class="inner align-middle wow fadeIn">
+                                    <h2 class="pt-5 text-white text-uppercase">基本原理模型</h2>
+                                    <p class="lead mt-5">
+                                        从训练数据中的语音信号中，将提取一种流行的语音特征，即梅尔频率倒谱系数（MFCC）；已知其中包含性别信息（除其他外）。这两种性别模型是通过使用另一种著名的ML技术（高斯混合模型（GMM））建立的。GMM将训练样本的MFCC作为输入，并尝试学习它们的分布，这将代表性别。现在，当要检测新语音样本的性别时，首先将提取样本的MFCC，然后使用经过训练的GMM模型来计算两个模型的特征得分。具有最高分数的模型被预测为测试语音的性别。
+                                        <br />1.使用语音帧
+                                        <br />2.提取MFCC功能
+                                        <br />3.使用GMM训练性别模型
+                                        <br />4.评估AudioSet语料库的性能
+                                    </p>
+                                    <br/><br/>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!--who we are-->
+                        <section class="bg-style1" id="work">
+                            <div class="container">
+                                <div class="inner">
+                                    <div class="row">
+                                        <div class="col-xs-12 wow fadeIn">
+                                            <h2 class="text-white text-uppercase">实现过程</h2>
+                                            <p class="pt-4l">
+                                                使用语音帧
+                                                <br />语音信号只是一个数字序列，表示扬声器说出的语音幅度。使用语音信号时，我们需要了解3个核心概念：
+                                                <br />取景 –由于语音是非平稳信号，其频率内容会随着时间不断变化。为了对信号进行任何形式的分析，例如了解短时间间隔内的频率内容（称为信号的短期傅立叶变换），我们需要能够将其视为固定信号。为了实现这种平稳性，可以将语音信号分为持续时间为20到30毫秒的短帧 ，因为我们的声道形状在这么小的时间间隔内可以保持不变。短于该持续时间的帧将没有足够的采样值来很好地估计频率分量，而在较长的帧中，信号在帧内的变化可能太大，以至于静止状态不再成立。
+                                                <br />窗口化 –从语音信号中提取原始帧可能会导致端点不连续，这是因为提取的波形中的周期数不是整数，这将导致错误的频率表示（在信号处理术语中称为频谱泄漏 ）。通过将窗函数与语音帧相乘来防止这种情况。窗函数的振幅朝着其两端逐渐降低至零，因此该乘法使上述不连续性的振幅最小。
+                                                <br />重叠的帧 –由于开窗，实际上实际上是在帧的开始和结束时丢失了样本；这也将导致不正确的频率表示。为了补偿这种损耗，我们以重叠的帧，而不是不相交的帧，以使得从第i的末端失去了样品第帧和第（i + 1）的开头第帧被全部包括在由重叠形成的框架在这两个帧之间。 帧之间的重叠通常被认为是10-15毫秒。
+                                                <br />提取MFCC功能
+                                                <br /> 提取语音帧后，我们现在继续为每个语音帧导出MFCC特征。语音是由人类通过我们的声道对肺排出的空气进行过滤而产生的。声源（肺）的属性对于所有扬声器都是共有的；它是声道的特性，它负责使信号频谱成形，并且在扬声器之间会发生变化。声道的形状控制产生的声音，而MFCC最能代表这种形状。
+                                                <br />MFCC是梅尔频率倒谱系数，是倒谱域中信号的一些变换值。根据言语产生理论，认为言语是源（从肺排出的空气）和过滤器（我们的声道）的卷积。此处的目的是表征过滤器并删除源部分。为了做到这一点，
+                                                <br />1、我们首先使用傅立叶变换将时域语音信号转换为频谱域信号，其中源和滤波器部分现在处于相乘状态。
+                                                <br />2、记录转换值的对数，以便源和滤波器现在在对数谱域中可加。使用对数从乘法转换到求和，可以很容易地使用线性滤波器将源和滤波器分开。
+                                                <br />3、最后，我们使用对数频谱信号的离散余弦变换（发现比FFT或I-FFT更成功）来获得MFCC。最初的想法是使用Inverse-FFT将对数频谱信号变换到时域，但是“ log”是一种非线性运算，创建了一个称为Quefrency的新频率，或者说它将对数频谱信号变换成了一个称为倒频谱域的新域（规格相反）。
+                                                <br />4、MFFC中的“ mel”一词的原因是mel标度，它精确地指定了如何分隔频率区域。与低频时相比，人类在分辨低频时音调的细微变化方面要好得多。合并此比例使我们的功能与人类听到的声音更加匹配。
+                                                <br />以下python代码是从给定音频中提取MFCC功能的函数。
+                                                <br />import python_speech_features as mfcc
+                                                <br />def get_MFCC(sr,audio):
+                                                    <br />features = mfcc.mfcc(audio, sr, 0.025, 0.01, 13, appendEnergy = False)
+                                                    <br />features = preprocessing.scale(features)
+                                                    <br />return features
+                                                <br />培训性别模型
+                                                <br />为了从上述提取的特征构建性别检测系统，我们需要对两种性别都进行建模。我们为此雇用了GMM。
+                                                <br />高斯混合模型是一种概率聚类模型，用于表示总人口中亚人群的存在。训练GMM的想法是通过' k' 高斯分布/簇的线性组合（也称为GMM的组成部分）近似类的概率分布。模型的数据点（特征向量）的可能性由以下公式给出：
+                                                <img src="图片/图片1.png" alt="">
+                                                ，在哪里 <img src="图片/图片2.png" alt=""> 是高斯分布<br /><img src="图片/图片3.png" alt=""><img src="图片/图片4.png" alt=""><br />
+                                                训练资料 <img src="图片/图片5.png" alt=""> 班上的<img src="图片/图片6.png" alt="">  用于估计参数均值 <img src="图片/图片7.png" alt="">，协方差矩阵<img src="图片/图片8.png" alt=""> 和重量 在这k个成分中
+                                                最初，它通过K-means算法识别数据中的k个 聚类，并分配相等的权重<img src="图片/图片19.png" alt="">每个集群。 然后将k个高斯分布拟合到这k个群集。参数<img src="图片/图片9.png" alt="">，<img src="图片/图片11.png" alt="">和<img src="图片/图片12.png" alt=""> 集群中的所有集群都会迭代更新，直到收敛为止。用于此估计的最普遍使用的方法是期望最大化（EM）算法。
+                                                <br />from sklearn.mixture import GMM
+                                                <br />gmm = GMM(n_components = 8, n_iter = 200, covariance_type='diag',n_init = 3)
+                                                <br />gmm.fit(features)
+                                                <br />sklearn.mixture我们使用Python的软件包从features包含MFCC功能的矩阵中学习GMM 。该GMM对象需要的部件数量n_components被装配上的数据，迭代的数量n_iter，以用于估计这些n个分量的参数来执行，共方差的类型covariance_type的特征和次数之间假定n_iter的K-表示要进行初始化。保留给出最佳结果的初始化。fit（）然后，该函数使用EM算法估算模型参数。
+                                                <br />以下Python代码用于训练性别模型。该代码针对每个性别运行一次，并source提供相应性别的培训文件的路径。
+                                                <br />#train_models.py
+                                                 <br />
+                                                <br />import os
+                                                <br />import cPickle
+                                                <br />import numpy as np
+                                                <br />from scipy.io.wavfile import read
+                                                <br />from sklearn.mixture import GMM
+                                                <br />import python_speech_features as mfcc
+                                                <br />from sklearn import preprocessing
+                                                <br />import warnings
+                                                <br />warnings.filterwarnings("ignore")
+                                                 <br />
+                                                <br />def get_MFCC(sr,audio):
+                                                    <br />features = mfcc.mfcc(audio,sr, 0.025, 0.01, 13,appendEnergy = False)
+                                                    <br />features = preprocessing.scale(features)
+                                                    <br />return features
+                                                 <br />
+                                                <br />#path to training data
+                                                <br />source   = "D:\\pygender\\train_data\\youtube\\male\\"
+                                                <br />#path to save trained model
+                                                <br />dest		= "D:\\pygender\\"
+                                                <br />files		= [os.path.join(source,f) for f in os.listdir(source) if
+                                                             <br />f.endswith('.wav')]
+                                                <br />eatures = np.asarray(());
+                                                 <br />
+                                                <br />for f in files:
+                                                   <br />sr,audio = read(f)
+                                                    <br />vector   = get_MFCC(sr,audio)
+                                                    <br />if features.size == 0:
+                                                        <br />features = vector
+                                                    <br />else:
+                                                        <br />features = np.vstack((features, vector))
+                                                 <br />
+                                                <br />gmm = GMM(n_components = 8, n_iter = 200, covariance_type='diag',
+                                                        <br />n_init = 3)
+                                                <br />gmm.fit(features)
+                                                <br />picklefile = f.split("\\")[-2].split(".wav")[0]+".gmm"
+                                                 <br />
+                                                <br /># model saved as male.gmm
+                                                <br />cPickle.dump(gmm,open(dest + picklefile,'w'))
+                                                <br />print 'modeling completed for gender:',picklefile
+                                                <br />
+                                                <br />评估AudioSet语料库的子集
+                                                <br />在测试语音样本进行性别检测后，我们首先为它提取MFCC功能，帧大小为25 ms，帧之间重叠10 ms。接下来，我们需要样本每一帧的对数似然分数，<img src="图片/图片14.png" alt="">，属于每个性别，即<img src="图片/图片16.png" alt="">和<img src="图片/图片15.png" alt="">是要计算的。使用（2），通过代入<img src="图片/图片7.png" alt="">和<img src="图片/图片8.png" alt="">GMM模型的模型。 对模型中的k个高斯分量中的每一个都进行此操作，然后根据取k个 似然的加权总和。模型的参数<img src="图片/图片9.png" alt="">，就像（1）中一样。当对数运算应用于获得的总和时，将为我们提供该帧的对数似然值。对样本的所有帧重复此过程，并添加所有帧的似然度。
+                                                <br />与此类似，通过代入训练后的男性GMM模型的参数值并对所有帧重复上述过程，可以计算出语音是男性的可能性。下面给出的Python代码可以预测测试音频的性别。
+                                                <br />
+                                                <br />#test_gender.py
+                                                <br />import os
+                                                <br />import cPickle
+                                                <br />import numpy as np
+                                                <br />from scipy.io.wavfile import read
+                                                <br />import python_speech_features as mfcc
+                                                <br />from sklearn import preprocessing
+                                                <br />import warnings
+                                                <br />warnings.filterwarnings("ignore")
+                                                <br />def get_MFCC(sr,audio):
+                                                    <br />features = mfcc.mfcc(audio,sr, 0.025, 0.01, 13,appendEnergy = False)
+                                                    <br />feat     = np.asarray(())
+                                                    <br />for i in range(features.shape[0]):
+                                                        <br />temp = features[i,:]
+                                                        <br />if np.isnan(np.min(temp)):
+                                                            <br />continue
+                                                        <br />else:
+                                                            <br />if feat.size == 0:
+                                                                <br />feat = temp
+                                                            <br />else:
+                                                                <br />feat = np.vstack((feat, temp))
+                                                    <br />features = feat;
+                                                    <br />features = preprocessing.scale(features)
+                                                    <br />return features
+                                                 <br />
+                                                <br />#path to test data
+                                                <br />sourcepath = "D:\\pygender\\test_data\\AudioSet\\female_clips\\"
+                                                <br />#path to saved models
+                                                <br />modelpath  = "D:\\pygender\\"    
+                                                <br />
+                                                <br />gmm_files = [os.path.join(modelpath,fname) for fname in
+                                                              <br />os.listdir(modelpath) if fname.endswith('.gmm')]
+                                                <br />models    = [cPickle.load(open(fname,'r')) for fname in gmm_files]
+                                                <br />genders   = [fname.split("\\")[-1].split(".gmm")[0] for fname
+                                                              <br />in gmm_files]
+                                                <br />files     = [os.path.join(sourcepath,f) for f in os.listdir(sourcepath)
+                                                              <br />if f.endswith(".wav")]
+                                                 <br />
+                                                <br />for f in files:
+                                                    <br />print f.split("\\")[-1]
+                                                    <br />sr, audio  = read(f)
+                                                    <br />features   = get_MFCC(sr,audio)
+                                                    <br />scores     = None
+                                                    <br />log_likelihood = np.zeros(len(models))
+                                                    <br />for i in range(len(models)):
+                                                        <br />gmm    = models[i]         #checking with each model one by one
+                                                        <br />scores = np.array(gmm.score(features))
+                                                        <br />log_likelihood[i] = scores.sum()
+                                                      <br />winner = np.argmax(log_likelihood)
+                                                 	<br />print"\tdetected as - ", genders[winner],"\n\tscores:female ",log_likelihood[0],",male ", log_likelihood[1],"\n"
+
+                                        </div>
+                                    </div>
+                                    <div class="row mt-4">
+                                        <div class="col-lg-12 mt-2">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        </section>
+
+                        <!--who we are-->
+                        <section class="bg-style3"  id="about">
+                            <div class="container">
+                                <div class="inner">
+                                    <div class="row">
+                                        <div class="col-xs-12">
+                                            <h2 class="text-white text-uppercase"></h2>
+                                            <p class="pt-4">
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row d-md-flex mt-4 text-center">
+                                        <div class="col-sm-1 mt-100 wow fadeIn">
+                                            <img src="图片/试验结果分析.pdf" width="750" height="1000"alt="" />
+                                        </div>
+                                        <div class="col-sm-4 mt-2 wow fadeInUp">
+
+                                        </div>
+                                        <div class="col-sm-4 mt-2 wow fadeInRight">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!--contact-->
+                        <section class="bg-style2">
+                            <div class="container">
+                                <div class="inner">
+                                    <div class="row d-md-flex text-center wow fadeIn">
+                                        <div class="col-sm-4">
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!--footer-->
+                        <section id="connect" class="bg-style2 pt-0">
+                            <div class="container">
+                                <div class="row">
+                                    <h2 class="pt-3 text-white text-uppercase">组员：杨朝晖  何晏臣  黄洋</h2>
+                                    <div class="col-sm-8 offset-sm-2 col-xs-12 text-center">
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.js"></script>
+        <script src="js/scripts.js"></script>
+    </body>
+</html>
